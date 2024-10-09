@@ -5,7 +5,7 @@ const OptionsPanel = () => {
     const [colorizerEnabled, setColorizerEnabled] = useState(false);
     const [translatorEnabled, setTranslatorEnabled] = useState(false);
     const [selectedModel, setSelectedModel] = useState('model1');
-    const flaskApiUrl = 'https://vigilant-palm-tree-jgrqvvwp7r53qg-6000.app.github.dev';
+    const flaskApiUrl = process.env.REACT_APP_FLASK_API_URL;
 
     const handleModelChange = (model) => {
         if (translatorEnabled) {
