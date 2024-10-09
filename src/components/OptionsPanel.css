@@ -1,0 +1,87 @@
+.options-panel {
+    background-color: #1e1e2f;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.option-container {
+    background-color: #2e2e3b;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h3 {
+    margin: 0;
+}
+
+.custom-toggler {
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    background-color: #5a5a6d;
+    transition: background-color 0.3s;
+}
+
+.custom-toggler.enabled {
+    background-color: #4CAF50;
+}
+
+.description {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+.model-buttons {
+    display: grid; /* Use grid layout */
+    grid-template-columns: repeat(3, 1fr); /* Three equal columns */
+    gap: 10px; /* Space between buttons */
+    margin-top: 10px;
+}
+
+.model-button {
+    padding: 5px 10px; /* Smaller padding */
+    font-size: 0.6em; /* Smaller font size */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #3a3a4b;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.model-button.selected {
+    background-color: #4CAF50;
+}
+
+.model-button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+.start-processing {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.start-processing:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+.start-processing:hover:not(:disabled) {
+    background-color: #45a049;
+}
