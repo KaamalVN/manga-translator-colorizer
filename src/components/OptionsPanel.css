@@ -85,3 +85,9 @@ h3 {
 .start-processing:hover:not(:disabled) {
     background-color: #45a049;
 }
+
+@media (min-width: 650px) and (max-width: 1000px) {
+    .model-buttons {
+        grid-template-columns: repeat(4, 1fr); /* Four equal columns */
+    }
+}
