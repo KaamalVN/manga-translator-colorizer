@@ -19,13 +19,14 @@ body {
 }
 
 /* Header */
-.header {
+.logo-header {
   height: 60px;
   background-color: #161623;
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  justify-content: space-between;
+  padding-bottom: 5px;
+  padding: 0 5px;
+  justify-content: center;
   border-bottom: 1px solid #333;
 }
 
@@ -104,31 +105,43 @@ button:hover {
 /* Mobile Layout */
 
 /* Toggle Buttons for Mobile */
-.mobile-toggle {
-  display: none;
-  justify-content: space-around;
-  background-color: #161623;
+.mobile-toggle-container{
   padding: 10px;
 }
 
-.toggle-button {
-  background-color: #6272a4;
-  border: none;
-  padding: 10px 20px;
-  color: white;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.3s ease;
+.mobile-toggle {
+  display: flex;
+  background-color: #2e2e3b; /* Dark background color */
+  padding: 5px;
+  border-radius: 10px;
 }
 
-.toggle-button.active {
-  background-color: #50fa7b;
-  transform: scale(1.1);
+.toggle-button {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  background-color: #2e2e3b; /* Button background color */
+  color: #bbb; /* Text color */
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s, color 0.3s;
+  margin-left: 10px; /* Add margin to the left of each button */
+}
+
+/* Remove margin from the first button to avoid extra space */
+.toggle-button:first-child {
+  margin-left: 0; /* No left margin for the first button */
 }
 
 .toggle-button:hover {
-  background-color: #50fa7b;
+  background-color: #4c4b66; /* Hover state */
+}
+
+.toggle-button.active {
+  background-color: #161623; /* Active button background color */
+  color: #fff; /* Active button text color */
 }
 
 /* Mobile content */
@@ -182,3 +195,8 @@ button:hover {
   }
 }
 
+@media (max-width: 358px) {
+  .logo{
+    font-size: 1.3rem;
+  }
+}
