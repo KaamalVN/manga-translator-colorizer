@@ -35,7 +35,7 @@ body {
   font-weight: bold;
 }
 
-/* Content Layout */
+/* Desktop Content Layout */
 .content {
   display: flex;
   flex: 1;
@@ -66,7 +66,6 @@ body {
   border-radius: 8px;
   padding: 20px;
 }
-
 
 /* Button Styles */
 button {
@@ -101,3 +100,85 @@ button:hover {
   width: 100%;
   border-radius: 8px;
 }
+
+/* Mobile Layout */
+
+/* Toggle Buttons for Mobile */
+.mobile-toggle {
+  display: none;
+  justify-content: space-around;
+  background-color: #161623;
+  padding: 10px;
+}
+
+.toggle-button {
+  background-color: #6272a4;
+  border: none;
+  padding: 10px 20px;
+  color: white;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.3s ease;
+}
+
+.toggle-button.active {
+  background-color: #50fa7b;
+  transform: scale(1.1);
+}
+
+.toggle-button:hover {
+  background-color: #50fa7b;
+}
+
+/* Mobile content */
+.mobile-content {
+  display: none;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mobile-box {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.mobile-box.show {
+  display: block;
+  opacity: 1;
+}
+
+.mobile-box.hide {
+  display: none;
+  opacity: 0;
+}
+
+/* Image Display */
+.image-display-container {
+  margin-top: 20px;
+  background-color: #22223b;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* Media Queries for Mobile */
+@media (max-width: 1000px) {
+  .desktop-content {
+    display: none; /* Hide desktop layout */
+  }
+  
+  .mobile-toggle {
+    display: flex; /* Show toggle buttons */
+  }
+
+  .mobile-content {
+    display: flex; /* Show mobile content */
+  }
+
+  .image-display-container {
+    margin-top: 0;
+    padding: 10px;
+  }
+}
+
