@@ -60,3 +60,8 @@
     border-radius: 8px;
   }
   
+  @media (max-width: 500px) {
+    .image-row.grid {
+      grid-template-columns: repeat(2, 1fr); /* Change to 2 columns */
+    }
+  }
