@@ -8,23 +8,26 @@ function App() {
   const [selectedMode, setSelectedMode] = useState({ translator: false, colorizer: false });
   const [translatorModel, setTranslatorModel] = useState('');
   const [refreshImages, setRefreshImages] = useState(false);
+  const [mobileView, setMobileView] = useState('upload'); // For toggling views in mobile
 
   const handleFilesAdded = () => {
     setRefreshImages((prev) => !prev);
   };
+
   return (
     <div className="app">
       <header className="header">
         <div className="logo">Manga Translator & Colorizer</div>
       </header>
 
-      <div className="content">
+      {/* Desktop layout */}
+      <div className="content desktop-content">
         <div className="column left">
           <ImageUploader onFilesAdded={handleFilesAdded} />
         </div>
 
         <div className="column middle">
-          <ImageDisplay refreshImages={refreshImages}/>
+          <ImageDisplay refreshImages={refreshImages} />
         </div>
 
         <div className="column right">
@@ -35,6 +38,40 @@ function App() {
             setTranslatorModel={setTranslatorModel}
           />
         </div>
+      </div>
+
+      {/* Mobile layout */}
+      <div className="mobile-toggle">
+        <button 
+          className={`toggle-button ${mobileView === 'upload' ? 'active' : ''}`} 
+          onClick={() => setMobileView('upload')}
+        >
+          Upload
+        </button>
+        <button 
+          className={`toggle-button ${mobileView === 'settings' ? 'active' : ''}`} 
+          onClick={() => setMobileView('settings')}
+        >
+          Settings
+        </button>
+      </div>
+
+      <div className="content mobile-content">
+        <div className={`mobile-box ${mobileView === 'upload' ? 'show' : 'hide'}`}>
+          <ImageUploader onFilesAdded={handleFilesAdded} />
+        </div>
+        <div className={`mobile-box ${mobileView === 'settings' ? 'show' : 'hide'}`}>
+          <OptionsPanel
+            selectedMode={selectedMode}
+            setSelectedMode={setSelectedMode}
+            translatorModel={translatorModel}
+            setTranslatorModel={setTranslatorModel}
+          />
+        </div>
+      </div>
+
+      <div className="image-display-container">
+        <ImageDisplay refreshImages={refreshImages} />
       </div>
     </div>
   );
