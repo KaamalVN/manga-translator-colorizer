@@ -16,7 +16,7 @@ function App() {
 
   return (
     <div className="app">
-      <header className="header">
+      <header className="logo-header">
         <div className="logo">Manga Translator & Colorizer</div>
       </header>
 
@@ -41,6 +41,7 @@ function App() {
       </div>
 
       {/* Mobile layout */}
+      <div className="mobile-toggle-container">
       <div className="mobile-toggle">
         <button 
           className={`toggle-button ${mobileView === 'upload' ? 'active' : ''}`} 
@@ -55,7 +56,7 @@ function App() {
           Settings
         </button>
       </div>
-
+      </div>
       <div className="content mobile-content">
         <div className={`mobile-box ${mobileView === 'upload' ? 'show' : 'hide'}`}>
           <ImageUploader onFilesAdded={handleFilesAdded} />
