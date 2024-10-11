@@ -107,80 +107,80 @@ button:hover {
 }
 
 /* Mobile Layout */
-
-/* Toggle Buttons for Mobile */
-.mobile-toggle-container{
-  padding: 10px;
-}
-
-.mobile-toggle {
-  display: flex;
-  background-color: #2e2e3b; /* Dark background color */
-  padding: 5px;
-  border-radius: 10px;
-}
-
-.toggle-button {
-  flex: 1;
-  padding: 10px 20px;
-  border: none;
-  background-color: #2e2e3b; /* Button background color */
-  color: #bbb; /* Text color */
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: center;
-  transition: background-color 0.3s, color 0.3s;
-  margin-left: 10px; /* Add margin to the left of each button */
-}
-
-/* Remove margin from the first button to avoid extra space */
-.toggle-button:first-child {
-  margin-left: 0; /* No left margin for the first button */
-}
-
-.toggle-button:hover {
-  background-color: #4c4b66; /* Hover state */
-}
-
-.toggle-button.active {
-  background-color: #161623; /* Active button background color */
-  color: #fff; /* Active button text color */
-}
-
-/* Mobile content */
-.mobile-content {
-  display: none;
-  justify-content: center;
-  padding: 20px;
-}
-
-.mobile-box {
-  display: none;
-  opacity: 0;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.mobile-box.show {
-  display: block;
-  opacity: 1;
-}
-
-.mobile-box.hide {
-  display: none;
-  opacity: 0;
-}
-
-/* Image Display */
-.image-display-container {
-  margin-top: 20px;
-  background-color: #22223b;
-  padding: 20px;
-  border-radius: 8px;
-}
-
 /* Media Queries for Mobile */
 @media (max-width: 1000px) {
+
+    /* Toggle Buttons for Mobile */
+  .mobile-toggle-container{
+    padding: 10px;
+  }
+
+  .mobile-toggle {
+    display: flex;
+    background-color: #2e2e3b; /* Dark background color */
+    padding: 5px;
+    border-radius: 10px;
+  }
+
+  .toggle-button {
+    flex: 1;
+    padding: 10px 20px;
+    border: none;
+    background-color: #2e2e3b; /* Button background color */
+    color: #bbb; /* Text color */
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s, color 0.3s;
+    margin-left: 10px; /* Add margin to the left of each button */
+  }
+
+  /* Remove margin from the first button to avoid extra space */
+  .toggle-button:first-child {
+    margin-left: 0; /* No left margin for the first button */
+  }
+
+  .toggle-button:hover {
+    background-color: #4c4b66; /* Hover state */
+  }
+
+  .toggle-button.active {
+    background-color: #161623; /* Active button background color */
+    color: #fff; /* Active button text color */
+  }
+
+  /* Mobile content */
+  .mobile-content {
+    display: none;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .mobile-box {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  .mobile-box.show {
+    display: block;
+    opacity: 1;
+  }
+
+  .mobile-box.hide {
+    display: none;
+    opacity: 0;
+  }
+
+  /* Image Display */
+  .image-display-container {
+    margin-top: 20px;
+    background-color: #22223b;
+    padding: 20px;
+    border-radius: 8px;
+  }
+
   .desktop-content {
     display: none; /* Hide desktop layout */
   }
