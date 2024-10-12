@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import './OptionsPanel.css';
 
-const OptionsPanel = () => {
+const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelRunning }) => {
     const [colorizerEnabled, setColorizerEnabled] = useState(false);
     const [translatorEnabled, setTranslatorEnabled] = useState(false);
     const [selectedModel, setSelectedModel] = useState('model1');
+
+
     const flaskApiUrl = process.env.REACT_APP_FLASK_API_URL;
 
     const handleModelChange = (model) => {
@@ -17,29 +19,34 @@ const OptionsPanel = () => {
         const sessionId = sessionStorage.getItem('sessionKey');
         console.log("Processing with:", { colorizerEnabled, translatorEnabled, selectedModel, sessionId });
         
-        const response = await fetch(`${flaskApiUrl}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                translator: translatorEnabled,  // Ensure this key matches Flask code
-                colorizer: colorizerEnabled,     // Ensure this key matches Flask code
-                model: selectedModel,
-                sessionId: sessionId,
-            }),
-        });
-    
-        if (response.ok) {
-            console.log("Processing started successfully.");
-            const data = await response.json();  // Optional: Get response data
-            console.log("Response data:", data);
-        } else {
-            const errorData = await response.json(); // Get error response data
-            console.error("Error starting the processing:", response.statusText, errorData);
+        // Call the function to set processing status and disable the button
+        onProcessingStarted();
+
+        try {
+            const response = await fetch(`${flaskApiUrl}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    translator: translatorEnabled,
+                    colorizer: colorizerEnabled,
+                    model: selectedModel,
+                    sessionId: sessionId,
+                }),
+            });
+
+            if (response.ok) {
+                console.log("Processing started successfully.");
+                onModelRunning();
+            } else {
+                const errorData = await response.json();
+                console.error("Error starting the processing:", response.statusText, errorData);
+            }
+        } catch (error) {
+            console.error("Error during fetching:", error);
         }
     };
-    
 
     return (
         <div className="options-panel">
@@ -59,7 +66,7 @@ const OptionsPanel = () => {
                             key={model} 
                             className={`model-button ${selectedModel === model ? 'selected' : ''}`} 
                             onClick={() => handleModelChange(model)}
-                            disabled={!translatorEnabled}
+                            disabled={!translatorEnabled || loading} // Disable if not enabled or loading
                         >
                             {model}
                         </button>
@@ -88,10 +95,13 @@ const OptionsPanel = () => {
             <button 
                 className="start-processing" 
                 onClick={handleStartProcessing} 
-                disabled={!translatorEnabled && !colorizerEnabled}
+                disabled={(!translatorEnabled && !colorizerEnabled) || loading} // Disable button if neither is enabled or loading
             >
-                Start Processing
+                {loading ? 'Processing...' : 'Start Processing'} 
             </button>
+
+            {processingStatus && <p className="status-message">{processingStatus}</p>}
+
         </div>
     );
 };

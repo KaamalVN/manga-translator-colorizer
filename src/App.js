@@ -8,20 +8,33 @@ function App() {
   const [selectedMode, setSelectedMode] = useState({ translator: false, colorizer: false });
   const [translatorModel, setTranslatorModel] = useState('');
   const [refreshImages, setRefreshImages] = useState(false);
-  const [mobileView, setMobileView] = useState('upload'); // For toggling views in mobile
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1000); // Check if screen is mobile-sized
+  const [mobileView, setMobileView] = useState('upload');
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1000);
+  const [processingStatus, setProcessingStatus] = useState('');
+  const [loading, setLoading] = useState(false); // Loading state for the process button
 
   const handleFilesAdded = () => {
     setRefreshImages((prev) => !prev);
   };
 
-  // This function will be triggered when processing is started from OptionsPanel
   const handleProcessingStarted = () => {
     console.log('Processing started...');
-    setRefreshImages((prev) => !prev); // For example, refresh images or do some action
+    setProcessingStatus('Processing started...');
+    setLoading(true); // Disable the processing button
   };
 
-  // Update isMobile state based on screen resize
+  const handleModelRunning = () => {
+    setProcessingStatus('Model running...');
+    //setRefreshImages(true); // Trigger image refresh
+    setRefreshImages((prev) => !prev);
+  };
+
+  const handleProcessingComplete = () => {
+    console.log('Processing completed with images:');
+    setProcessingStatus(''); // Reset the processing status
+    setLoading(false); // Enable the processing button
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1000);
@@ -29,7 +42,6 @@ function App() {
 
     window.addEventListener('resize', handleResize);
 
-    // Cleanup the event listener on unmount
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -41,10 +53,8 @@ function App() {
         <div className="logo">Manga Translator & Colorizer</div>
       </header>
 
-      {/* Conditional rendering based on whether it's mobile or not */}
       {isMobile ? (
         <>
-          {/* Mobile Layout */}
           <div className="mobile-toggle-container">
             <div className="mobile-toggle">
               <button 
@@ -71,33 +81,36 @@ function App() {
                 setSelectedMode={setSelectedMode}
                 translatorModel={translatorModel}
                 setTranslatorModel={setTranslatorModel}
-                onProcessingStarted={handleProcessingStarted} // Pass the function as prop
+                onProcessingStarted={handleProcessingStarted}
+                processingStatus={processingStatus}
+                loading={loading} // Pass loading state
+                onModelRunning={handleModelRunning} 
               />
             </div>
           </div>
           <div className="image-display-container">
-            <ImageDisplay refreshImages={refreshImages} />
+            <ImageDisplay refreshImages={refreshImages} onProcessingComplete={handleProcessingComplete} />
           </div>
         </>
       ) : (
         <>
-          {/* Desktop Layout */}
           <div className="content desktop-content">
             <div className="column left">
               <ImageUploader onFilesAdded={handleFilesAdded} />
             </div>
-
             <div className="column middle">
-              <ImageDisplay refreshImages={refreshImages} />
+              <ImageDisplay refreshImages={refreshImages} onProcessingComplete={handleProcessingComplete} />
             </div>
-
             <div className="column right">
               <OptionsPanel
                 selectedMode={selectedMode}
                 setSelectedMode={setSelectedMode}
                 translatorModel={translatorModel}
                 setTranslatorModel={setTranslatorModel}
-                onProcessingStarted={handleProcessingStarted} // Pass the function as prop
+                onProcessingStarted={handleProcessingStarted}
+                processingStatus={processingStatus}
+                loading={loading} // Pass loading state
+                onModelRunning={handleModelRunning} 
               />
             </div>
           </div>

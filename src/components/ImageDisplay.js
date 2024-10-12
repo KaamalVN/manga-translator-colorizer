@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import './ImageDisplay.css'; 
 
-const ImageDisplay = ({ refreshImages, optionsSelected = { showOriginal: true, showTranslated: true, showColorized: true } }) => {
+const ImageDisplay = ({ refreshImages, optionsSelected = { showOriginal: true, showTranslated: true, showColorized: true }, onProcessingComplete }) => {
   const [viewMode, setViewMode] = useState('grid');
   const [uploadedImages, setUploadedImages] = useState([]);
-  const [colorizedImages, setColorizedImages] = useState([]);  // New state for colorized images
+  const [colorizedImages, setColorizedImages] = useState([]);
 
   const flaskApiUrl = process.env.REACT_APP_FLASK_API_URL;
 
@@ -12,14 +12,7 @@ const ImageDisplay = ({ refreshImages, optionsSelected = { showOriginal: true, s
     setViewMode(mode);
   };
 
-  useEffect(() => {
-    fetchImages();
-    if (optionsSelected.showColorized) {
-      fetchColorizedImages();  // Fetch colorized images if enabled
-    }
-  }, [refreshImages]);
-
-  const fetchImages = async () => {
+  const fetchImages = useCallback(async () => {
     const sessionId = sessionStorage.getItem('sessionKey');
     if (!sessionId) {
       console.error('Session ID is undefined');
@@ -38,28 +31,53 @@ const ImageDisplay = ({ refreshImages, optionsSelected = { showOriginal: true, s
       console.error("Error fetching images:", error);
       setUploadedImages([]);
     }
-  };
+  }, [flaskApiUrl]);
 
-  const fetchColorizedImages = async () => {
+  const fetchColorizedImages = useCallback(async () => {
     const sessionId = sessionStorage.getItem('sessionKey');
     if (!sessionId) {
       console.error('Session ID is undefined');
       return;
     }
-
+  
     try {
-      const response = await fetch(`${flaskApiUrl}/get-colorized-images/${sessionId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch colorized images: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setColorizedImages(data.colorized_images);
+      // Start polling to check the colorization status
+      const statusCheckInterval = setInterval(async () => {
+        const statusResponse = await fetch(`${flaskApiUrl}/colorization-status/${sessionId}`);
+        const statusData = await statusResponse.json();
+  
+        if (statusData.status === 'completed') {
+          clearInterval(statusCheckInterval);  // Stop polling
+  
+          // Fetch colorized images once status is 'completed'
+          const response = await fetch(`${flaskApiUrl}/get-colorized-images/${sessionId}`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch colorized images: ${response.statusText}`);
+          }
+  
+          const data = await response.json();
+          setColorizedImages(data.colorized_images);
+          
+          // Trigger the parent component when colorized images are fetched
+          onProcessingComplete();
+        } else if (statusData.status === 'failed') {
+          clearInterval(statusCheckInterval);  // Stop polling on failure
+          console.error('Failed to colorize images.');
+        }
+      }, 2000);  // Poll every 2 seconds
+  
     } catch (error) {
       console.error("Error fetching colorized images:", error);
-      setColorizedImages([]);
+      setColorizedImages([]);  // Handle error by clearing the image state
     }
-  };
+  }, [flaskApiUrl, onProcessingComplete]);
+  
+  useEffect(() => {
+    fetchImages();
+    if (optionsSelected.showColorized) {
+      fetchColorizedImages();  
+    }
+  }, [refreshImages, optionsSelected.showColorized, fetchImages, fetchColorizedImages]);
 
   return (
     <div className="image-display">
