@@ -74,9 +74,9 @@ const ImageDisplay = ({ refreshImages, optionsSelected = { showOriginal: true, s
   
   useEffect(() => {
     fetchImages();
-    // if (optionsSelected.showColorized) {
-    //   fetchColorizedImages();  
-    // }
+    if (optionsSelected.showColorized) {
+      fetchColorizedImages();  
+    }
   }, [refreshImages, optionsSelected.showColorized, fetchImages, fetchColorizedImages]);
 
   return (
