@@ -77,7 +77,7 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
                 </p>
             </div>
 
-            <div className="option-container">
+            <div className="option-container2">
                 <div className="header">
                     <h3>Colorizer</h3>
                     <div 

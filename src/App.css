@@ -44,7 +44,6 @@ button {
 .content {
   display: flex;
   flex: 1;
-  padding: 20px;
 }
 
 .column {
@@ -104,6 +103,25 @@ button:hover {
 .image-item img {
   width: 100%;
   border-radius: 8px;
+}
+
+.logo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.tutorial-button {
+  display: flex;
+  border-radius: 18px;
+  width: 1px;
+  justify-content: center;
+  background: none;
+}
+
+.tutorial-button :hover{
+  background: none;
 }
 
 /* Mobile Layout */
@@ -199,8 +217,27 @@ button:hover {
   }
 }
 
-@media (max-width: 358px) {
+@media (max-width: 413px) {
+  .logo{
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 387px) {
   .logo{
     font-size: 1.3rem;
   }
 }
+
+@media (max-width: 363px) {
+  .logo{
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 343px) {
+  .logo{
+    font-size: 1.18rem;
+  }
+}
+
