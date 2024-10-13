@@ -83,7 +83,7 @@ button {
   transition: background-color 0.2s ease;
 }
 
-button:hover {
+.model-button:hover {
   background-color: #50fa7b;
 }
 
