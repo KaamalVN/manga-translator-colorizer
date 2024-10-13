@@ -52,65 +52,87 @@ function App() {
 
   const steps = [
     {
+      target: 'body', // Display the card in the center of the page
+      content: 'This tutorial will show you how to use the website for uploading, translating, and colorizing manga.',
+      placement: 'center',
+      disableBeacon: true, // Show card directly, no beacon
+    },
+    {
       target: '.drop-area', // Class name for ImageUploader
-      content: 'Upload images locally by dragging and dropping them into this area.',
+      content: 'Drag and drop your manga images here, or click to upload from your gallery.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.link-input', // Class name for OptionsPanel
-      content: 'Enter the link to a manga page, a single chapter, or the entire manga here.',
+      content: 'You can also enter a link to a manga page or chapter here.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.submit-link', // Class name for ImageDisplay
-      content: 'Click this button only if you are uploading images via a link.',
+      content: 'Click this button if you are uploading images via a link.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.option-container', // Class name for OptionsPanel
-      content: 'Enable the translator and select your desired model from this section.',
+      content: 'If you want to use the translator, enable it and choose your desired model from this section.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.option-container2', // Class name for OptionsPanel
-      content: 'Here, you can enable the colorizer for your images.',
+      content: 'If you want to use the colorizer, enable it here.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.start-processing', // Class name for OptionsPanel
-      content: 'This button will only be enabled if you select at least one of the options above.',
+      content: 'This button will be enabled if you choose at least one option above. Click this to start processing.',
+      disableBeacon: true, // Disable beacon
     },
   ];
-
+  
   const mobileSteps = [
     {
+      target: 'body', // Display the card in the center of the page
+      content: 'This tutorial will show you how to use the website for uploading, translating, and colorizing manga.',
+      placement: 'center',
+      disableBeacon: true, // Show card directly, no beacon
+    },
+    {
       target: '.drop-area', // Class name for ImageUploader
-      content: 'Upload images locally by dragging and dropping them into this area.',
+      content: 'Click here to upload from your gallery.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.link-input', // Class name for OptionsPanel
-      content: 'Enter the link to a manga page, a single chapter, or the entire manga here.',
+      content: 'You can also enter a link to a manga page or chapter here.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.submit-link', // Class name for ImageDisplay
-      content: 'Click this button only if you are uploading images via a link.',
+      content: 'Click this button if you are uploading images via a link.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.mobile-toggle-container', // Class name for ImageDisplay
-      content: 'Here, you can toggle between upload part and the settings.',
+      content: 'Here, you can toggle between the upload part and the settings.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.option-container', // Class name for OptionsPanel
-      content: 'Enable the translator and select your desired model from this section.',
+      content: 'If you want to use the translator, enable it and choose your desired model from this section.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.option-container2', // Class name for OptionsPanel
-      content: 'Here, you can enable the colorizer for your images.',
+      content: 'If you want to use the colorizer, enable it here.',
+      disableBeacon: true, // Disable beacon
     },
     {
       target: '.start-processing', // Class name for OptionsPanel
-      content: 'This button will only be enabled if you select at least one of the options above.',
+      content: 'This button will be enabled if you choose at least one option above. Click this to start processing.',
+      disableBeacon: true, // Disable beacon
     },
   ];
-
   
-  
-
   return (
     <div className="app">
       <header className="logo-header">
@@ -124,7 +146,7 @@ function App() {
       </header>
 
       <Joyride 
-         steps={isMobile ? mobileSteps : steps}
+        steps={isMobile ? mobileSteps : steps}
         run={runTutorial}  // Control Joyride visibility
         continuous
         showSkipButton={true}  // Show the skip button
@@ -134,14 +156,37 @@ function App() {
           options: {
             zIndex: 10000,  // Ensure Joyride overlay is above other components
           },
+          tooltip: {
+            backgroundColor: '#161623',  // Change tooltip background color
+            borderRadius: '8px',         // Make the corners rounded
+            color: '#fff',               // Text color
+            fontSize: '16px',            // Adjust font size
+          },
+          buttonNext: {
+            backgroundColor: '#007bff',  // Change next button color
+            borderRadius: '4px',
+            fontSize: '14px',
+          },
+          buttonSkip: {
+            backgroundColor: 'transparent', // Skip button background
+            color: '#555',                  // Text color of skip button
+          },
+
+          buttonBack: {
+            color: '#fff',
+            fontSize: '14px',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',  // Customize the overlay behind the tooltip
+          },
         }}
         callback={(data) => {
           if (data.status === 'finished' || data.status === 'skipped') {
             setMobileView('upload')
             setRunTutorial(false);  // Stop the tutorial on finish or skip
           }
-              // Check if the step index is the one that requires changing the mobile view
-          if (data.action === 'next' && data.index === 3) {
+          // Check if the step index is the one that requires changing the mobile view
+          if (data.action === 'next' && data.index === 4) {
             setMobileView('settings'); // Change to settings view
           }
         }}
