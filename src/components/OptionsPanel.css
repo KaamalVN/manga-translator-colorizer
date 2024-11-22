@@ -93,6 +93,45 @@ h3 {
     background-color: #45a049;
 }
 
+.key-inputs {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #3a3a4b; /* Darker background to match existing design */
+    border-radius: 8px;
+}
+
+.key-input-container {
+    margin-bottom: 10px;
+}
+
+.key-input-container label {
+    display: block;
+    font-size: 0.9em;
+    color: #ddd; /* Lighter color for labels */
+    margin-bottom: 5px;
+}
+
+.key-input-container input {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.9em;
+    border: 1px solid #444; /* Border similar to the panel's style */
+    border-radius: 4px;
+    background-color: #2e2e3b;
+    color: white;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.key-input-container input:focus {
+    border-color: #4CAF50; /* Green border on focus */
+    background-color: #3a3a4b; /* Slightly lighter background */
+}
+
+.key-input-container input::placeholder {
+    color: #aaa; /* Lighter placeholder text */
+}
+
+
 @media (min-width: 650px) and (max-width: 1000px) {
     .model-buttons {
         grid-template-columns: repeat(4, 1fr); /* Four equal columns */
