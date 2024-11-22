@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import './App.css';
 import ImageUploader from './components/ImageUploader';
 import ImageDisplay from './components/ImageDisplay';
 import OptionsPanel from './components/OptionsPanel';
 import Joyride from 'react-joyride';  // Import Joyride
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { faLink, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+
+export const FlaskApiContext = createContext();
 
 function App() {
   const [selectedMode, setSelectedMode] = useState({ translator: false, colorizer: false });
@@ -16,28 +18,94 @@ function App() {
   const [processingStatus, setProcessingStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [runTutorial, setRunTutorial] = useState(false);  // State for running tutorial
+  const [flaskApiUrl, setFlaskApiUrl] = useState(() => {
+    // Retrieve the Flask API URL from localStorage on initial load
+    return localStorage.getItem('flaskApiUrl') || process.env.REACT_APP_FLASK_API_URL || '';
+  });
+  const [isInputVisible, setInputVisible] = useState(false); // To track visibility of the input box
+  const [newUrl, setNewUrl] = useState(''); // To store the new URL input by the user
 
+  useEffect(() => {
+    // Function to send flaskApiUrl to backend automatically
+    console.log("flaskApiUrl in App: ",flaskApiUrl);
+    // Call the function when the component mounts or flaskApiUrl changes
+    if (flaskApiUrl) {
+      sendFlaskApiUrl(flaskApiUrl);
+    }
+  }, [flaskApiUrl]); // Dependency array ensures it runs when flaskApiUrl changes
+
+  const sendFlaskApiUrl = (flaskApiUrl) => {
+    console.log("sendFlaskApiUrl called");
+    if (!flaskApiUrl) {
+      console.error("Flask API URL is undefined.");
+      return;
+    }
+  
+    setLoading(true); // Set loading state
+  
+    // Directly update the Flask API URL
+    fetch(`${flaskApiUrl}/api/update-flask-url`, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: flaskApiUrl }),
+    })
+      .then(response => {
+        console.log(response);
+        if (!response.ok) {
+          throw new Error('Failed to update Flask API URL');
+        }
+        return response.json(); // Parse JSON response
+      })
+      .then((data) => {
+        console.log('Flask API URL updated:', data);
+        setLoading(false);  // Stop loading when done
+      })
+      .catch((error) => {
+        console.error('Error updating Flask API URL:', error);
+  
+        // Handle specific error scenarios
+        if (error.message.includes('Failed to fetch')) {
+          alert('Flask API server is not reachable. Please check the URL or start the server.');
+        }
+  
+        setLoading(false);  // Stop loading on error
+      });
+  };
+  
+
+  const handleApiUrlChange = (e) => {
+    setFlaskApiUrl(e.target.value);
+  };
+
+  // Handle files being added
   const handleFilesAdded = () => {
     setRefreshImages((prev) => !prev);
   };
 
+  // Handle when processing starts
   const handleProcessingStarted = () => {
     console.log('Processing started...');
     setProcessingStatus('Processing started...');
     setLoading(true);
   };
 
+  // Handle when the model is running
   const handleModelRunning = () => {
     setProcessingStatus('Model running...');
     setRefreshImages((prev) => !prev);
   };
 
+  // Handle when processing is complete
   const handleProcessingComplete = () => {
     console.log('Processing completed with images:');
     setProcessingStatus('');
     setLoading(false);
   };
 
+  // Update window size on resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1000);
@@ -49,6 +117,18 @@ function App() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  const handleButtonClick = () => {
+    setInputVisible(!isInputVisible);
+  };
+
+  // Update Flask URL from the input box when the user submits
+  const handleSubmit = () => {
+    setFlaskApiUrl(newUrl); // Update the global Flask URL
+    localStorage.setItem('flaskApiUrl', newUrl);
+    sendFlaskApiUrl(newUrl); // Send it to the backend
+    setInputVisible(false); // Hide the input after submitting
+  };
 
   const steps = [
     {
@@ -133,17 +213,49 @@ function App() {
     },
   ];
   
+   // Handle URL input submission
+  
+
   return (
+    <FlaskApiContext.Provider value={flaskApiUrl}>
     <div className="app">
       <header className="logo-header">
         <div className="logo">Manga Translator & Colorizer</div>
+        <div className="button-header">
+        <button
+          className="api-url-button"
+          onClick={handleButtonClick}
+        >
+          <FontAwesomeIcon icon={faLink} size="lg" />
+        </button>
         <button 
           className="tutorial-button" 
-          onClick={() => setRunTutorial(true)} // Start the tutorial
+          onClick={() => setRunTutorial(true)}  // Start the tutorial
         >
           <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
         </button>
+        </div>
+
+        {isInputVisible && (
+          <div className="popup-overlay">
+            <div className="popup-content">
+              <h3>Enter Flask API URL</h3>
+              <input 
+                type="text" 
+                value={newUrl} 
+                onChange={(e) => setNewUrl(e.target.value)} 
+                placeholder="Enter Flask API URL"
+              />
+              <div className="url-button-header">
+              <button onClick={handleSubmit}>Submit</button>
+              <button onClick={handleButtonClick}>Close</button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </header>
+
 
       <Joyride 
         steps={isMobile ? mobileSteps : steps}
@@ -171,7 +283,6 @@ function App() {
             backgroundColor: 'transparent', // Skip button background
             color: '#555',                  // Text color of skip button
           },
-
           buttonBack: {
             color: '#fff',
             fontSize: '14px',
@@ -194,6 +305,7 @@ function App() {
 
       {isMobile ? (
         <>
+          {/* Mobile-specific components */}
           <div className="mobile-toggle-container">
             <div className="mobile-toggle">
               <button 
@@ -233,6 +345,7 @@ function App() {
         </>
       ) : (
         <>
+          {/* Desktop-specific components */}
           <div className="content desktop-content">
             <div className="column left image-uploader">
               <ImageUploader onFilesAdded={handleFilesAdded} />
@@ -256,6 +369,7 @@ function App() {
         </>
       )}
     </div>
+    </FlaskApiContext.Provider>
   );
 }
 
