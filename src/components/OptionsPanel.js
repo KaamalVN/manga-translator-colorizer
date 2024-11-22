@@ -1,24 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { FlaskApiContext } from '../App';
 import './OptionsPanel.css';
 
 const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelRunning }) => {
     const [colorizerEnabled, setColorizerEnabled] = useState(false);
     const [translatorEnabled, setTranslatorEnabled] = useState(false);
     const [selectedModel, setSelectedModel] = useState('model1');
+    const [apiKeys, setApiKeys] = useState({});
+    const [showKeyInputs, setShowKeyInputs] = useState(false);
 
+    const flaskApiUrl = useContext(FlaskApiContext);
 
-    const flaskApiUrl = process.env.REACT_APP_FLASK_API_URL;
+    const models = {
+        google: { requiresKey: false },
+        youdao: { requiresKey: true, keyCount: 2, labels: ['YOUDAO_APP_KEY', 'YOUDAO_SECRET_KEY'] },
+        baidu: { requiresKey: true, keyCount: 2, labels: ['BAIDU_APP_ID', 'BAIDU_SECRET_KEY'] },
+        deepl: { requiresKey: true, keyCount: 1, labels: ['DEEPL_AUTH_KEY'] },
+        caiyun: { requiresKey: true, keyCount: 1, labels: ['CAIYUN_TOKEN'] },
+        gpt3: { requiresKey: true, keyCount: 1, labels: ['OPENAI_API_KEY'] },
+        gpt3_5: { requiresKey: true, keyCount: 1, labels: ['OPENAI_API_KEY'] },
+        gpt4: { requiresKey: true, keyCount: 1, labels: ['OPENAI_API_KEY'] },
+        papago: { requiresKey: false },
+        sakura: { requiresKey: true, keyCount: 1, labels: ['SAKURA_API_BASE'] },
+        offline: { requiresKey: false },
+        sugoi: { requiresKey: false },
+        m2m100: { requiresKey: false },
+        m2m100_big: { requiresKey: false },
+    };
 
     const handleModelChange = (model) => {
-        if (translatorEnabled) {
-            setSelectedModel(model);
+        setSelectedModel(model);
+        if (models[model].requiresKey) {
+            setShowKeyInputs(true);
+        } else {
+            setShowKeyInputs(false);
         }
+    };
+
+    const handleKeyInputChange = (key, value) => {
+        setApiKeys({ ...apiKeys, [key]: value });
     };
 
     const handleStartProcessing = async () => {
         const sessionId = sessionStorage.getItem('sessionKey');
-        console.log("Processing with:", { colorizerEnabled, translatorEnabled, selectedModel, sessionId });
-        
+        console.log("Processing with:", { colorizerEnabled, translatorEnabled, selectedModel, sessionId, apiKeys });
+
         // Call the function to set processing status and disable the button
         onProcessingStarted();
 
@@ -33,6 +59,7 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
                     colorizer: colorizerEnabled,
                     model: selectedModel,
                     sessionId: sessionId,
+                    apiKeys: apiKeys,
                 }),
             });
 
@@ -61,7 +88,7 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
                     </div>
                 </div>
                 <div className="model-buttons">
-                    {['Google', 'Youdao', 'Baidu', 'DeepL', 'Papago', 'Sugoi', 'M2M100', 'M2M100_BIG'].map((model) => (
+                    {Object.keys(models).map((model) => (
                         <button 
                             key={model} 
                             className={`model-button ${selectedModel === model ? 'selected' : ''}`} 
@@ -72,6 +99,20 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
                         </button>
                     ))}
                 </div>
+                {showKeyInputs && models[selectedModel].keyCount > 0 && (
+                    <div className="key-inputs">
+                        {models[selectedModel].labels.map((label, index) => (
+                            <div key={index} className="key-input-container">
+                                <label>{label}</label>
+                                <input
+                                    type="text"
+                                    onChange={(e) => handleKeyInputChange(label, e.target.value)}
+                                    placeholder={`Enter ${label}`}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
                 <p className="description">
                     Powered by the state-of-the-art translation model by <b>zyddnys</b>, found in the <b>manga-image-translator</b> repository.
                 </p>
