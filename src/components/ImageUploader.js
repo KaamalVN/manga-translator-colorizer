@@ -1,150 +1,161 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { FlaskApiContext } from '../App';
-import './OptionsPanel.css';
 
-const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelRunning }) => {
-    const [colorizerEnabled, setColorizerEnabled] = useState(false);
-    const [translatorEnabled, setTranslatorEnabled] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('model1');
-    const [apiKeys, setApiKeys] = useState({});
-    const [showKeyInputs, setShowKeyInputs] = useState(false);
+import './ImageUploader.css';
+
+
+const ImageUploader = ({ onFilesAdded }) => {
+    const [link, setLink] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false); // New loading state
 
     const flaskApiUrl = useContext(FlaskApiContext);
 
-    const models = {
-        google: { requiresKey: false },
-        youdao: { requiresKey: true, keyCount: 2, labels: ['YOUDAO_APP_KEY', 'YOUDAO_SECRET_KEY'] },
-        baidu: { requiresKey: true, keyCount: 2, labels: ['BAIDU_APP_ID', 'BAIDU_SECRET_KEY'] },
-        deepl: { requiresKey: true, keyCount: 1, labels: ['DEEPL_AUTH_KEY'] },
-        caiyun: { requiresKey: true, keyCount: 1, labels: ['CAIYUN_TOKEN'] },
-        gpt3: { requiresKey: true, keyCount: 1, labels: ['OPENAI_API_KEY'] },
-        gpt3_5: { requiresKey: true, keyCount: 1, labels: ['OPENAI_API_KEY'] },
-        gpt4: { requiresKey: true, keyCount: 1, labels: ['OPENAI_API_KEY'] },
-        papago: { requiresKey: false },
-        sakura: { requiresKey: true, keyCount: 1, labels: ['SAKURA_API_BASE'] },
-        offline: { requiresKey: false },
-        sugoi: { requiresKey: false },
-        m2m100: { requiresKey: false },
-        m2m100_big: { requiresKey: false },
-    };
+    useEffect(() => {
+        const sessionKey = sessionStorage.getItem('sessionKey');
+        if (!sessionKey) {
+            const newSessionKey = 'session_' + Math.random().toString(36).substr(2, 9);
+            sessionStorage.setItem('sessionKey', newSessionKey);
+        }
+        console.log("flaskApiUrl in ImageUploader: ",flaskApiUrl);
+    }, [flaskApiUrl]);
 
-    const handleModelChange = (model) => {
-        setSelectedModel(model);
-        if (models[model].requiresKey) {
-            setShowKeyInputs(true);
-        } else {
-            setShowKeyInputs(false);
+    const handleFileDrop = (event) => {
+        event.preventDefault();
+        const files = Array.from(event.dataTransfer.files);
+        if (files.length > 0) {
+            uploadFiles(files);
         }
     };
 
-    const handleKeyInputChange = (key, value) => {
-        setApiKeys({ ...apiKeys, [key]: value });
+    const handleFileInputChange = (event) => {
+        const files = Array.from(event.target.files);
+        if (files.length > 0) {
+            uploadFiles(files);
+        }
     };
 
-    const handleStartProcessing = async () => {
+    const uploadFiles = (files) => {
+        if (!flaskApiUrl) {
+            setError("Flask API URL is not set.");
+            return;
+          }          
+        setLoading(true); // Set loading to true when upload starts
         const sessionId = sessionStorage.getItem('sessionKey');
-        console.log("Processing with:", { colorizerEnabled, translatorEnabled, selectedModel, sessionId, apiKeys });
+        const formData = new FormData();
+        files.forEach((file) => {
+            formData.append('images', file);
+        });
+        formData.append('sessionId', sessionId);
 
-        // Call the function to set processing status and disable the button
-        onProcessingStarted();
-
-        try {
-            const response = await fetch(`${flaskApiUrl}/process`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    translator: translatorEnabled,
-                    colorizer: colorizerEnabled,
-                    model: selectedModel,
-                    sessionId: sessionId,
-                    apiKeys: apiKeys,
-                }),
-            });
-
-            if (response.ok) {
-                console.log("Processing started successfully.");
-                onModelRunning();
-            } else {
-                const errorData = await response.json();
-                console.error("Error starting the processing:", response.statusText, errorData);
+        fetch(`${flaskApiUrl}/upload`, {
+            method: 'POST',
+            mode: 'cors',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Upload failed');
             }
-        } catch (error) {
-            console.error("Error during fetching:", error);
+            return response.json();
+        })
+        .then(data => {
+            console.log("Upload successful:", data);
+            onFilesAdded(); // Notify parent component about the upload completion
+            setLoading(false); // Stop loading when done
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            setError("Failed to upload images.");
+            setLoading(false); // Stop loading in case of error
+        });
+    };
+
+    const handleSubmitLink = (event) => {
+        event.preventDefault();
+        const sessionId = sessionStorage.getItem('sessionKey');
+        if (!link) {
+            setError('Please enter a link');
+            return;
         }
+
+        if (!flaskApiUrl) {
+            setError("Flask API URL is not set.");
+            return;
+          }          
+        
+        setLoading(true); // Set loading to true when link submission starts
+
+        // Send the GET request without waiting for a response
+        fetch(`${flaskApiUrl}/download?url=${encodeURIComponent(link)}&sessionId=${sessionId}`, {
+            method: 'GET',
+        })
+        .then(() => {
+            // Start polling for status immediately after sending the request
+            const statusCheckInterval = setInterval(async () => {
+                const statusResponse = await fetch(`${flaskApiUrl}/download-status/${sessionId}`);
+                const statusData = await statusResponse.json();
+
+                if (statusData.status === 'completed') {
+                    clearInterval(statusCheckInterval);
+                    const filesResponse = await fetch(`${flaskApiUrl}/download?url=${encodeURIComponent(link)}&sessionId=${sessionId}`, {
+                        method: 'GET',
+                    });
+                    const filesData = await filesResponse.json();
+                    onFilesAdded(filesData.files); // Notify parent with file data
+                    setLoading(false); // Stop loading when done
+                } else if (statusData.status === 'failed') {
+                    clearInterval(statusCheckInterval);
+                    setError('Failed to upload images.');
+                    setLoading(false); // Stop loading in case of error
+                }
+            }, 2000); // Check every 2 seconds
+        })
+        .catch(err => {
+            setError(err.message);
+            setLoading(false); // Stop loading in case of error
+        });
     };
 
     return (
-        <div className="options-panel">
-            <div className="option-container">
-                <div className="header">
-                    <h3>Translator</h3>
-                    <div 
-                        className={`custom-toggler ${translatorEnabled ? 'enabled' : ''}`} 
-                        onClick={() => setTranslatorEnabled(!translatorEnabled)}
-                    >
-                        {translatorEnabled ? 'ON' : 'OFF'}
-                    </div>
+        <div className="image-uploader">
+            <div className="row">
+                <h3>Choose or Drag & Drop Images</h3>
+                <div 
+                    className="drop-area" 
+                    onDrop={handleFileDrop} 
+                    onDragOver={(e) => e.preventDefault()}
+                >
+                    <input 
+                        type="file" 
+                        accept="image/jpeg" 
+                        multiple 
+                        onChange={handleFileInputChange} 
+                        style={{ display: 'none' }} 
+                        id="file-upload"
+                    />
+                    <label htmlFor="file-upload" className="upload-label">
+                        Drag & Drop your files here or click to select
+                    </label>
                 </div>
-                <div className="model-buttons">
-                    {Object.keys(models).map((model) => (
-                        <button 
-                            key={model} 
-                            className={`model-button ${selectedModel === model ? 'selected' : ''}`} 
-                            onClick={() => handleModelChange(model)}
-                            disabled={!translatorEnabled || loading} // Disable if not enabled or loading
-                        >
-                            {model}
-                        </button>
-                    ))}
-                </div>
-                {showKeyInputs && models[selectedModel].keyCount > 0 && (
-                    <div className="key-inputs">
-                        {models[selectedModel].labels.map((label, index) => (
-                            <div key={index} className="key-input-container">
-                                <label>{label}</label>
-                                <input
-                                    type="text"
-                                    onChange={(e) => handleKeyInputChange(label, e.target.value)}
-                                    placeholder={`Enter ${label}`}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                )}
-                <p className="description">
-                    Powered by the state-of-the-art translation model by <b>zyddnys</b>, found in the <b>manga-image-translator</b> repository.
-                </p>
             </div>
-
-            <div className="option-container2">
-                <div className="header">
-                    <h3>Colorizer</h3>
-                    <div 
-                        className={`custom-toggler ${colorizerEnabled ? 'enabled' : ''}`} 
-                        onClick={() => setColorizerEnabled(!colorizerEnabled)}
-                    >
-                        {colorizerEnabled ? 'ON' : 'OFF'}
-                    </div>
-                </div>
-                <p className="description">
-                    Utilizes the advanced colorization model developed by <b>qweasdd</b>, available at the <b>manga-colorization-v2</b> GitHub repository.
-                </p>
+            <div className="row">
+                <h3>Paste Manga Link</h3>
+                <textarea 
+                    rows="4" 
+                    value={link} 
+                    onChange={(e) => setLink(e.target.value)} 
+                    placeholder="Enter main manga page link or single chapter link..."
+                    className="link-input"
+                />
+                <button onClick={handleSubmitLink} className="submit-link">Submit Link</button>
             </div>
-
-            <button 
-                className="start-processing" 
-                onClick={handleStartProcessing} 
-                disabled={(!translatorEnabled && !colorizerEnabled) || loading} // Disable button if neither is enabled or loading
-            >
-                {loading ? 'Processing...' : 'Start Processing'} 
-            </button>
-
-            {processingStatus && <p className="status-message">{processingStatus}</p>}
-
+            
+            {/* Show loading message */}
+            {loading && <div className="loading-message">Uploading, please wait...</div>}
+            {error && <div className="error-message">{error}</div>}
         </div>
     );
 };
 
-export default OptionsPanel;
+export default ImageUploader;
