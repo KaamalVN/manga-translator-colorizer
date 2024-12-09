@@ -94,11 +94,35 @@ h3 {
 }
 
 .key-inputs {
-    margin-top: 10px;
+    transition: all 0.3s ease;
+    overflow: hidden;
     padding: 10px;
-    background-color: #3a3a4b; /* Darker background to match existing design */
+    background-color: #3a3a4b;
     border-radius: 8px;
+    margin-top: 10px;
 }
+
+.key-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.key-toggle-button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between icon and text */
+}
+
+.key-toggle-button:hover {
+    color: #45a049;
+}
+
 
 .key-input-container {
     margin-bottom: 10px;
@@ -107,25 +131,25 @@ h3 {
 .key-input-container label {
     display: block;
     font-size: 0.9em;
-    color: #ddd; /* Lighter color for labels */
     margin-bottom: 5px;
+    text-transform: capitalize;
 }
 
 .key-input-container input {
     width: 100%;
     padding: 8px;
     font-size: 0.9em;
-    border: 1px solid #444; /* Border similar to the panel's style */
+    border: 1px solid #444;
     border-radius: 4px;
     background-color: #2e2e3b;
     color: white;
-    transition: border-color 0.3s, background-color 0.3s;
+    transition: border-color 0.3s;
 }
 
 .key-input-container input:focus {
-    border-color: #4CAF50; /* Green border on focus */
-    background-color: #3a3a4b; /* Slightly lighter background */
+    border-color: #4CAF50;
 }
+
 
 .key-input-container input::placeholder {
     color: #aaa; /* Lighter placeholder text */
