@@ -1,6 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { FlaskApiContext } from '../App';
 import './OptionsPanel.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons';
+
 
 const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelRunning }) => {
     const [colorizerEnabled, setColorizerEnabled] = useState(false);
@@ -8,6 +11,7 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
     const [selectedModel, setSelectedModel] = useState('model1');
     const [apiKeys, setApiKeys] = useState({});
     const [showKeyInputs, setShowKeyInputs] = useState(false);
+    const [keySectionMinimized, setKeySectionMinimized] = useState(false);
 
     const flaskApiUrl = useContext(FlaskApiContext);
 
@@ -41,11 +45,12 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
         setApiKeys({ ...apiKeys, [key]: value });
     };
 
+    const handleKeySectionToggle = () => {
+        setKeySectionMinimized((prev) => !prev);
+    };
+
     const handleStartProcessing = async () => {
         const sessionId = sessionStorage.getItem('sessionKey');
-        console.log("Processing with:", { colorizerEnabled, translatorEnabled, selectedModel, sessionId, apiKeys });
-
-        // Call the function to set processing status and disable the button
         onProcessingStarted();
 
         try {
@@ -64,24 +69,24 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
             });
 
             if (response.ok) {
-                console.log("Processing started successfully.");
                 onModelRunning();
             } else {
                 const errorData = await response.json();
-                console.error("Error starting the processing:", response.statusText, errorData);
+                console.error('Error starting the processing:', response.statusText, errorData);
             }
         } catch (error) {
-            console.error("Error during fetching:", error);
+            console.error('Error during fetching:', error);
         }
     };
 
     return (
         <div className="options-panel">
+            {/* Translator Section */}
             <div className="option-container">
                 <div className="header">
                     <h3>Translator</h3>
-                    <div 
-                        className={`custom-toggler ${translatorEnabled ? 'enabled' : ''}`} 
+                    <div
+                        className={`custom-toggler ${translatorEnabled ? 'enabled' : ''}`}
                         onClick={() => setTranslatorEnabled(!translatorEnabled)}
                     >
                         {translatorEnabled ? 'ON' : 'OFF'}
@@ -89,62 +94,79 @@ const OptionsPanel = ({ onProcessingStarted, processingStatus, loading, onModelR
                 </div>
                 <div className="model-buttons">
                     {Object.keys(models).map((model) => (
-                        <button 
-                            key={model} 
-                            className={`model-button ${selectedModel === model ? 'selected' : ''}`} 
+                        <button
+                            key={model}
+                            className={`model-button ${selectedModel === model ? 'selected' : ''}`}
                             onClick={() => handleModelChange(model)}
-                            disabled={!translatorEnabled || loading} // Disable if not enabled or loading
+                            disabled={!translatorEnabled || loading}
                         >
                             {model}
                         </button>
                     ))}
                 </div>
-                {showKeyInputs && models[selectedModel].keyCount > 0 && (
-                    <div className="key-inputs">
-                        {models[selectedModel].labels.map((label, index) => (
-                            <div key={index} className="key-input-container">
-                                <label>{label}</label>
-                                <input
-                                    type="text"
-                                    onChange={(e) => handleKeyInputChange(label, e.target.value)}
-                                    placeholder={`Enter ${label}`}
-                                />
-                            </div>
-                        ))}
+                {translatorEnabled && showKeyInputs && models[selectedModel].keyCount > 0 && (
+                    <div className={`key-inputs ${keySectionMinimized ? 'minimized' : ''}`}>
+                        <div className="key-header">
+                            <h4>API Keys</h4>
+                            <button className="key-toggle-button" onClick={handleKeySectionToggle}>
+                                {keySectionMinimized ? (
+                                    <>
+                                        <FontAwesomeIcon icon={faAngleDown} />
+                                    </>
+                                ) : (
+                                    <>
+                                        <FontAwesomeIcon icon={faAngleUp} />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                        {!keySectionMinimized &&
+                            models[selectedModel].labels.map((label, index) => (
+                                <div key={index} className="key-input-container">
+                                    <label>{label.replace(/_/g, ' ').toLowerCase()}</label>
+                                    <input
+                                        type="text"
+                                        onChange={(e) => handleKeyInputChange(label, e.target.value)}
+                                        placeholder={`Enter ${label.replace(/_/g, ' ').toLowerCase()}`}
+                                    />
+                                </div>
+                            ))}
                     </div>
                 )}
                 <p className="description">
-                    Powered by the state-of-the-art translation model by <b>zyddnys</b>, found in the <b>manga-image-translator</b> repository.
+                Powered by the state-of-the-art translation model by <b>zyddnys</b>, found in the <b>manga-image-translator</b> repository.
                 </p>
             </div>
 
+            {/* Colorizer Section */}
             <div className="option-container2">
                 <div className="header">
                     <h3>Colorizer</h3>
-                    <div 
-                        className={`custom-toggler ${colorizerEnabled ? 'enabled' : ''}`} 
+                    <div
+                        className={`custom-toggler ${colorizerEnabled ? 'enabled' : ''}`}
                         onClick={() => setColorizerEnabled(!colorizerEnabled)}
                     >
                         {colorizerEnabled ? 'ON' : 'OFF'}
                     </div>
                 </div>
-                <p className="description">
-                    Utilizes the advanced colorization model developed by <b>qweasdd</b>, available at the <b>manga-colorization-v2</b> GitHub repository.
-                </p>
+                <p className="description">Utilizes the advanced colorization model developed by <b>qweasdd</b>, available at the <b>manga-colorization-v2</b> GitHub repository.</p>
             </div>
 
-            <button 
-                className="start-processing" 
-                onClick={handleStartProcessing} 
-                disabled={(!translatorEnabled && !colorizerEnabled) || loading} // Disable button if neither is enabled or loading
+            {/* Start Processing Button */}
+            <button
+                className="start-processing"
+                onClick={handleStartProcessing}
+                disabled={(!translatorEnabled && !colorizerEnabled) || loading}
             >
-                {loading ? 'Processing...' : 'Start Processing'} 
+                {loading ? 'Processing...' : 'Start Processing'}
             </button>
 
             {processingStatus && <p className="status-message">{processingStatus}</p>}
-
         </div>
     );
 };
 
 export default OptionsPanel;
+
+
+
